@@ -1,0 +1,240 @@
+﻿<ManagementPack ContentReadable="true" SchemaVersion="2.0" OriginalSchemaVersion="1.1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <Manifest>
+    <Identity>
+      <ID>Cireson.CancelActivitiesWhenSRFails</ID>
+      <Version>1.0.0.1</Version>
+    </Identity>
+    <Name>Cireson.CancelActivitiesWhenSRFails</Name>
+    <References>
+      <Reference Alias="System">
+        <ID>System.Library</ID>
+        <Version>7.5.8501.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="Console">
+        <ID>Microsoft.EnterpriseManagement.ServiceManager.UI.Console</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="CustomSystem_WorkItem_ServiceRequest_Library">
+        <ID>System.WorkItem.ServiceRequest.Library</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="EnterpriseManagement">
+        <ID>Microsoft.EnterpriseManagement.ServiceManager.UI.Administration</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="SystemCenter">
+        <ID>Microsoft.SystemCenter.Library</ID>
+        <Version>7.0.8443.6</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="SystemCenter1">
+        <ID>Microsoft.SystemCenter.Subscriptions</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="Core">
+        <ID>ServiceManager.Core.Library</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="Windows">
+        <ID>Microsoft.Windows.Library</ID>
+        <Version>7.5.8501.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="System_WorkItem_Library">
+        <ID>System.WorkItem.Library</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+    </References>
+  </Manifest>
+  <TypeDefinitions>
+    <ModuleTypes>
+      <WriteActionModuleType ID="CancelPendingSRActivitiesWhenSRFails.WindowsPowerShellScript.95049425_04ab_4b46_b151_12d0810d25b3.MT" Accessibility="Public" RunAs="Core!Microsoft.SystemCenter.ServiceManager.WorkflowAccount" Batching="false">
+        <Configuration>
+          <IncludeSchemaTypes>
+            <SchemaType>Windows!Microsoft.Windows.PowerShellSchema</SchemaType>
+          </IncludeSchemaTypes>
+          <xsd:element name="ServiceRequestID" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+        </Configuration>
+        <OverrideableParameters>
+          <OverrideableParameter ID="ServiceRequestID" Selector="$Config/ServiceRequestID$" ParameterType="string" />
+        </OverrideableParameters>
+        <ModuleImplementation Isolation="Any">
+          <Composite>
+            <MemberModules>
+              <WriteAction ID="CancelPendingSRActivitiesWhenSRFails.WindowsPowerShellScript.95049425_04ab_4b46_b151_12d0810d25b3.PSWA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
+                <ScriptName>DoWork.ps1</ScriptName>
+                <ScriptBody>param ( [string]$ServiceRequestID )
+import-module smlets
+$InProgress = Get-SCSMEnumeration -Name ActivityStatusEnum.Ready
+
+$Cancelled = Get-SCSMEnumeration -Name ActivityStatusEnum.Cancelled
+
+$ServiceRequest = Get-SCSMObject -Class (Get-SCSMClass -Name System.WorkItem.ServiceRequest$) -Filter "Id -eq $ServiceRequestID"
+
+$ChildActivities = (Get-SCSMRelationshipObject -BySource $ServiceRequest | ?{$_.RelationshipID -eq "2da498be-0485-b2b2-d520-6ebd1698e61b"})
+
+$ChildActivities | %{$Activity = Get-SCSMObject -ID $_.TargetObject.Id; if($Activity.Status -eq $InProgress){$Activity | Set-SCSMObject -Property Status -Value $Cancelled}}</ScriptBody>
+                <SnapIns></SnapIns>
+                <Parameters>
+                  <Parameter>
+                    <Name>ServiceRequestID</Name>
+                    <Value>$Config/ServiceRequestID$</Value>
+                  </Parameter>
+                </Parameters>
+                <TimeoutSeconds>300</TimeoutSeconds>
+                <StrictErrorHandling>true</StrictErrorHandling>
+                <SerializationDepth>3</SerializationDepth>
+              </WriteAction>
+            </MemberModules>
+            <Composition>
+              <Node ID="CancelPendingSRActivitiesWhenSRFails.WindowsPowerShellScript.95049425_04ab_4b46_b151_12d0810d25b3.PSWA" />
+            </Composition>
+          </Composite>
+        </ModuleImplementation>
+        <InputType>System!System.BaseData</InputType>
+      </WriteActionModuleType>
+    </ModuleTypes>
+  </TypeDefinitions>
+  <Categories>
+    <Category ID="Cireson.CancelActivitiesWhenSRFails.Category" Value="Console!Microsoft.EnterpriseManagement.ServiceManager.ManagementPack">
+      <ManagementPackName>Cireson.CancelActivitiesWhenSRFails</ManagementPackName>
+      <ManagementPackVersion>1.0.0.0</ManagementPackVersion>
+    </Category>
+    <Category ID="CancelPendingSRActivitiesWhenSRFailsCategory" Target="CancelPendingSRActivitiesWhenSRFails" Value="EnterpriseManagement!Microsoft.EnterpriseManagement.ServiceManager.Rules.WorkflowSubscriptions" />
+  </Categories>
+  <Monitoring>
+    <Rules>
+      <Rule ID="CancelPendingSRActivitiesWhenSRFails" Enabled="true" Target="SystemCenter!Microsoft.SystemCenter.SubscriptionWorkflowTarget" ConfirmDelivery="true" Remotable="true" Priority="Normal" DiscardLevel="100">
+        <Category>Notification</Category>
+        <DataSources>
+          <DataSource ID="DS" TypeID="SystemCenter1!Microsoft.SystemCenter.CmdbInstanceSubscription.DataSourceModule">
+            <Subscription>
+              <InstanceSubscription Type="$MPElement[Name='CustomSystem_WorkItem_ServiceRequest_Library!System.WorkItem.ServiceRequest']$">
+                <UpdateInstance>
+                  <Criteria>
+                    <Expression>
+                      <And>
+                        <Expression>
+                          <Or>
+                            <Expression>
+                              <SimpleExpression>
+                                <ValueExpression>
+                                  <Property State="Pre">$Context/Property[Type='CustomSystem_WorkItem_ServiceRequest_Library!System.WorkItem.ServiceRequest']/Status$</Property>
+                                </ValueExpression>
+                                <Operator>NotEqual</Operator>
+                                <ValueExpression>
+                                  <Value>{21dbfcb4-05f3-fcc0-a58e-a9c48cde3b0e}</Value>
+                                </ValueExpression>
+                              </SimpleExpression>
+                            </Expression>
+                            <Expression>
+                              <SimpleExpression>
+                                <ValueExpression>
+                                  <Property State="Pre">$Context/Property[Type='CustomSystem_WorkItem_ServiceRequest_Library!System.WorkItem.ServiceRequest']/Status$</Property>
+                                </ValueExpression>
+                                <Operator>NotEqual</Operator>
+                                <ValueExpression>
+                                  <Value>{674e87e4-a58e-eab0-9a05-b48881de784c}</Value>
+                                </ValueExpression>
+                              </SimpleExpression>
+                            </Expression>
+                          </Or>
+                        </Expression>
+                        <Expression>
+                          <Or>
+                            <Expression>
+                              <SimpleExpression>
+                                <ValueExpression>
+                                  <Property State="Post">$Context/Property[Type='CustomSystem_WorkItem_ServiceRequest_Library!System.WorkItem.ServiceRequest']/Status$</Property>
+                                </ValueExpression>
+                                <Operator>Equal</Operator>
+                                <ValueExpression>
+                                  <Value>{21dbfcb4-05f3-fcc0-a58e-a9c48cde3b0e}</Value>
+                                </ValueExpression>
+                              </SimpleExpression>
+                            </Expression>
+                            <Expression>
+                              <SimpleExpression>
+                                <ValueExpression>
+                                  <Property State="Post">$Context/Property[Type='CustomSystem_WorkItem_ServiceRequest_Library!System.WorkItem.ServiceRequest']/Status$</Property>
+                                </ValueExpression>
+                                <Operator>Equal</Operator>
+                                <ValueExpression>
+                                  <Value>{674e87e4-a58e-eab0-9a05-b48881de784c}</Value>
+                                </ValueExpression>
+                              </SimpleExpression>
+                            </Expression>
+                          </Or>
+                        </Expression>
+                      </And>
+                    </Expression>
+                  </Criteria>
+                </UpdateInstance>
+              </InstanceSubscription>
+              <PollingIntervalInSeconds>60</PollingIntervalInSeconds>
+              <BatchSize>100</BatchSize>
+            </Subscription>
+          </DataSource>
+        </DataSources>
+        <WriteActions>
+          <WriteAction ID="WA" TypeID="SystemCenter1!Microsoft.EnterpriseManagement.SystemCenter.Subscription.WindowsWorkflowTaskWriteAction">
+            <Subscription>
+              <WindowsWorkflowConfiguration>
+                <AssemblyName>CancelPendingSRActivitiesWhenSRFails</AssemblyName>
+                <WorkflowTypeName>WorkflowAuthoring.CancelPendingSRActivitiesWhenSRFails</WorkflowTypeName>
+                <WorkflowParameters>
+                  <WorkflowParameter Name="CancelSRActivities_ServiceRequestID" Type="string">$Data/Property[@ID='$MPElement[Name="System_WorkItem_Library!System.WorkItem"]/Id$' and @State='Post']$</WorkflowParameter>
+                </WorkflowParameters>
+                <RetryExceptions></RetryExceptions>
+                <RetryDelaySeconds>60</RetryDelaySeconds>
+                <MaximumRunningTimeSeconds>300</MaximumRunningTimeSeconds>
+              </WindowsWorkflowConfiguration>
+            </Subscription>
+          </WriteAction>
+        </WriteActions>
+      </Rule>
+    </Rules>
+    <Tasks>
+      <Task ID="CancelPendingSRActivitiesWhenSRFails.WindowsPowerShellScript.95049425_04ab_4b46_b151_12d0810d25b3" Accessibility="Public" Enabled="true" Target="Windows!Microsoft.Windows.Computer" Timeout="300" Remotable="true">
+        <Category>Notification</Category>
+        <WriteAction ID="CancelPendingSRActivitiesWhenSRFails.WindowsPowerShellScript.95049425_04ab_4b46_b151_12d0810d25b3.WA" TypeID="CancelPendingSRActivitiesWhenSRFails.WindowsPowerShellScript.95049425_04ab_4b46_b151_12d0810d25b3.MT">
+          <ServiceRequestID></ServiceRequestID>
+        </WriteAction>
+      </Task>
+    </Tasks>
+  </Monitoring>
+  <LanguagePacks>
+    <LanguagePack ID="ENA" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="Cireson.CancelActivitiesWhenSRFails">
+          <Name>Cireson.CancelActivitiesWhenSRFails</Name>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+    <LanguagePack ID="ENU" IsDefault="false">
+      <DisplayStrings>
+        <DisplayString ElementID="Cireson.CancelActivitiesWhenSRFails">
+          <Name>Cireson - Cancel Activities When SR Fails</Name>
+        </DisplayString>
+        <DisplayString ElementID="CancelPendingSRActivitiesWhenSRFails">
+          <Name>CancelPendingSRActivitiesWhenSRFails</Name>
+          <Description>Cancel all pending child activities when an SR fails or is cancelled</Description>
+        </DisplayString>
+        <DisplayString ElementID="CancelPendingSRActivitiesWhenSRFails" SubElementID="WA">
+          <Name>Cancel all pending child activities when an SR fails or is cancelled</Name>
+          <Description>Cancel all pending child activities when an SR fails or is cancelled</Description>
+        </DisplayString>
+        <DisplayString ElementID="CancelPendingSRActivitiesWhenSRFails.WindowsPowerShellScript.95049425_04ab_4b46_b151_12d0810d25b3">
+          <Name>CancelPendingSRActivitiesWhenSRFails.WindowsPowerShellScript.95049425_04ab_4b46_b151_12d0810d25b3</Name>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPack>
