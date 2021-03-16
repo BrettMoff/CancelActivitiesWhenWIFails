@@ -1,0 +1,236 @@
+﻿<ManagementPack ContentReadable="true" SchemaVersion="2.0" OriginalSchemaVersion="1.1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <Manifest>
+    <Identity>
+      <ID>Cireson.CancelActivitiesWhenCRFails</ID>
+      <Version>1.0.0.1</Version>
+    </Identity>
+    <Name>Cireson.CancelActivitiesWhenCRFails</Name>
+    <References>
+      <Reference Alias="System">
+        <ID>System.Library</ID>
+        <Version>7.5.8501.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="Console">
+        <ID>Microsoft.EnterpriseManagement.ServiceManager.UI.Console</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="CustomSystem_WorkItem_ChangeRequest_Library">
+        <ID>System.WorkItem.ChangeRequest.Library</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="EnterpriseManagement">
+        <ID>Microsoft.EnterpriseManagement.ServiceManager.UI.Administration</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="SystemCenter">
+        <ID>Microsoft.SystemCenter.Library</ID>
+        <Version>7.0.8443.6</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="SystemCenter1">
+        <ID>Microsoft.SystemCenter.Subscriptions</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="System_WorkItem_Library">
+        <ID>System.WorkItem.Library</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="Core">
+        <ID>ServiceManager.Core.Library</ID>
+        <Version>10.19.1035.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+      <Reference Alias="Windows">
+        <ID>Microsoft.Windows.Library</ID>
+        <Version>7.5.8501.0</Version>
+        <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
+      </Reference>
+    </References>
+  </Manifest>
+  <TypeDefinitions>
+    <ModuleTypes>
+      <WriteActionModuleType ID="CancelPendingCRActivitiesWhenCRFails.WindowsPowerShellScript.73a4d3ae_4c35_4769_b912_266e78876e5c.MT" Accessibility="Public" RunAs="Core!Microsoft.SystemCenter.ServiceManager.WorkflowAccount" Batching="false">
+        <Configuration>
+          <IncludeSchemaTypes>
+            <SchemaType>Windows!Microsoft.Windows.PowerShellSchema</SchemaType>
+          </IncludeSchemaTypes>
+          <xsd:element name="ChangeRequestID" type="xsd:string" xmlns:xsd="http://www.w3.org/2001/XMLSchema" />
+        </Configuration>
+        <OverrideableParameters>
+          <OverrideableParameter ID="ChangeRequestID" Selector="$Config/ChangeRequestID$" ParameterType="string" />
+        </OverrideableParameters>
+        <ModuleImplementation Isolation="Any">
+          <Composite>
+            <MemberModules>
+              <WriteAction ID="CancelPendingCRActivitiesWhenCRFails.WindowsPowerShellScript.73a4d3ae_4c35_4769_b912_266e78876e5c.PSWA" TypeID="Windows!Microsoft.Windows.PowerShellWriteAction">
+                <ScriptName>DoWork.ps1</ScriptName>
+                <ScriptBody>param ( [string]$ChangeRequestID )
+import-module smlets
+$InProgress = Get-SCSMEnumeration -Name ActivityStatusEnum.Ready
+$Cancelled = Get-SCSMEnumeration -Name ActivityStatusEnum.Cancelled
+$ChangeRequest = Get-SCSMObject -Class (Get-SCSMClass -Name System.WorkItem.ChangeRequest$) -Filter "Id -eq $ChangeRequestID"
+$ChildActivities = (Get-SCSMRelationshipObject -BySource $ChangeRequest | ?{$_.RelationshipID -eq "2DA498BE-0485-B2B2-D520-6EBD1698E61B"})
+$ChildActivities | %{$Activity = Get-SCSMObject -ID $_.TargetObject.Id; if($Activity.Status -eq $InProgress){$Activity | Set-SCSMObject -Property Status -Value $Cancelled}}</ScriptBody>
+                <SnapIns></SnapIns>
+                <Parameters>
+                  <Parameter>
+                    <Name>ChangeRequestID</Name>
+                    <Value>$Config/ChangeRequestID$</Value>
+                  </Parameter>
+                </Parameters>
+                <TimeoutSeconds>300</TimeoutSeconds>
+                <StrictErrorHandling>true</StrictErrorHandling>
+                <SerializationDepth>3</SerializationDepth>
+              </WriteAction>
+            </MemberModules>
+            <Composition>
+              <Node ID="CancelPendingCRActivitiesWhenCRFails.WindowsPowerShellScript.73a4d3ae_4c35_4769_b912_266e78876e5c.PSWA" />
+            </Composition>
+          </Composite>
+        </ModuleImplementation>
+        <InputType>System!System.BaseData</InputType>
+      </WriteActionModuleType>
+    </ModuleTypes>
+  </TypeDefinitions>
+  <Categories>
+    <Category ID="Cireson.CancelActivitiesWhenCRFails.Category" Value="Console!Microsoft.EnterpriseManagement.ServiceManager.ManagementPack">
+      <ManagementPackName>Cireson.CancelActivitiesWhenCRFails</ManagementPackName>
+      <ManagementPackVersion>1.0.0.0</ManagementPackVersion>
+    </Category>
+    <Category ID="CancelPendingCRActivitiesWhenCRFailsCategory" Target="CancelPendingCRActivitiesWhenCRFails" Value="EnterpriseManagement!Microsoft.EnterpriseManagement.ServiceManager.Rules.WorkflowSubscriptions" />
+  </Categories>
+  <Monitoring>
+    <Rules>
+      <Rule ID="CancelPendingCRActivitiesWhenCRFails" Enabled="true" Target="SystemCenter!Microsoft.SystemCenter.SubscriptionWorkflowTarget" ConfirmDelivery="true" Remotable="true" Priority="Normal" DiscardLevel="100">
+        <Category>Notification</Category>
+        <DataSources>
+          <DataSource ID="DS" TypeID="SystemCenter1!Microsoft.SystemCenter.CmdbInstanceSubscription.DataSourceModule">
+            <Subscription>
+              <InstanceSubscription Type="$MPElement[Name='CustomSystem_WorkItem_ChangeRequest_Library!System.WorkItem.ChangeRequest']$">
+                <UpdateInstance>
+                  <Criteria>
+                    <Expression>
+                      <And>
+                        <Expression>
+                          <Or>
+                            <Expression>
+                              <SimpleExpression>
+                                <ValueExpression>
+                                  <Property State="Pre">$Context/Property[Type='CustomSystem_WorkItem_ChangeRequest_Library!System.WorkItem.ChangeRequest']/Status$</Property>
+                                </ValueExpression>
+                                <Operator>NotEqual</Operator>
+                                <ValueExpression>
+                                  <Value>{85f00ead-2603-6c68-dfec-531c83bf900f}</Value>
+                                </ValueExpression>
+                              </SimpleExpression>
+                            </Expression>
+                            <Expression>
+                              <SimpleExpression>
+                                <ValueExpression>
+                                  <Property State="Pre">$Context/Property[Type='CustomSystem_WorkItem_ChangeRequest_Library!System.WorkItem.ChangeRequest']/Status$</Property>
+                                </ValueExpression>
+                                <Operator>NotEqual</Operator>
+                                <ValueExpression>
+                                  <Value>{877defb6-0d21-7d19-89d5-a1107d621270}</Value>
+                                </ValueExpression>
+                              </SimpleExpression>
+                            </Expression>
+                          </Or>
+                        </Expression>
+                        <Expression>
+                          <Or>
+                            <Expression>
+                              <SimpleExpression>
+                                <ValueExpression>
+                                  <Property State="Post">$Context/Property[Type='CustomSystem_WorkItem_ChangeRequest_Library!System.WorkItem.ChangeRequest']/Status$</Property>
+                                </ValueExpression>
+                                <Operator>Equal</Operator>
+                                <ValueExpression>
+                                  <Value>{85f00ead-2603-6c68-dfec-531c83bf900f}</Value>
+                                </ValueExpression>
+                              </SimpleExpression>
+                            </Expression>
+                            <Expression>
+                              <SimpleExpression>
+                                <ValueExpression>
+                                  <Property State="Post">$Context/Property[Type='CustomSystem_WorkItem_ChangeRequest_Library!System.WorkItem.ChangeRequest']/Status$</Property>
+                                </ValueExpression>
+                                <Operator>Equal</Operator>
+                                <ValueExpression>
+                                  <Value>{877defb6-0d21-7d19-89d5-a1107d621270}</Value>
+                                </ValueExpression>
+                              </SimpleExpression>
+                            </Expression>
+                          </Or>
+                        </Expression>
+                      </And>
+                    </Expression>
+                  </Criteria>
+                </UpdateInstance>
+              </InstanceSubscription>
+              <PollingIntervalInSeconds>60</PollingIntervalInSeconds>
+              <BatchSize>100</BatchSize>
+            </Subscription>
+          </DataSource>
+        </DataSources>
+        <WriteActions>
+          <WriteAction ID="WA" TypeID="SystemCenter1!Microsoft.EnterpriseManagement.SystemCenter.Subscription.WindowsWorkflowTaskWriteAction">
+            <Subscription>
+              <WindowsWorkflowConfiguration>
+                <AssemblyName>CancelPendingCRActivitiesWhenCRFails</AssemblyName>
+                <WorkflowTypeName>WorkflowAuthoring.CancelPendingCRActivitiesWhenCRFails</WorkflowTypeName>
+                <WorkflowParameters>
+                  <WorkflowParameter Name="windowsPowerShellScript1_ChangeRequestID" Type="string">$Data/Property[@ID='$MPElement[Name="System_WorkItem_Library!System.WorkItem"]/Id$' and @State='Post']$</WorkflowParameter>
+                </WorkflowParameters>
+                <RetryExceptions></RetryExceptions>
+                <RetryDelaySeconds>60</RetryDelaySeconds>
+                <MaximumRunningTimeSeconds>300</MaximumRunningTimeSeconds>
+              </WindowsWorkflowConfiguration>
+            </Subscription>
+          </WriteAction>
+        </WriteActions>
+      </Rule>
+    </Rules>
+    <Tasks>
+      <Task ID="CancelPendingCRActivitiesWhenCRFails.WindowsPowerShellScript.73a4d3ae_4c35_4769_b912_266e78876e5c" Accessibility="Public" Enabled="true" Target="Windows!Microsoft.Windows.Computer" Timeout="300" Remotable="true">
+        <Category>Notification</Category>
+        <WriteAction ID="CancelPendingCRActivitiesWhenCRFails.WindowsPowerShellScript.73a4d3ae_4c35_4769_b912_266e78876e5c.WA" TypeID="CancelPendingCRActivitiesWhenCRFails.WindowsPowerShellScript.73a4d3ae_4c35_4769_b912_266e78876e5c.MT">
+          <ChangeRequestID></ChangeRequestID>
+        </WriteAction>
+      </Task>
+    </Tasks>
+  </Monitoring>
+  <LanguagePacks>
+    <LanguagePack ID="ENA" IsDefault="true">
+      <DisplayStrings>
+        <DisplayString ElementID="Cireson.CancelActivitiesWhenCRFails">
+          <Name>Cireson.CancelActivitiesWhenCRFails</Name>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+    <LanguagePack ID="ENU" IsDefault="false">
+      <DisplayStrings>
+        <DisplayString ElementID="Cireson.CancelActivitiesWhenCRFails">
+          <Name>Cireson.CancelActivitiesWhenCRFails</Name>
+        </DisplayString>
+        <DisplayString ElementID="CancelPendingCRActivitiesWhenCRFails">
+          <Name>CancelPendingCRActivitiesWhenCRFails</Name>
+          <Description>Cancel all pending child activities when an CR fails or is cancelled</Description>
+        </DisplayString>
+        <DisplayString ElementID="CancelPendingCRActivitiesWhenCRFails" SubElementID="WA">
+          <Name>Cancel all pending child activities when an CR fails or is cancelled</Name>
+          <Description>Cancel all pending child activities when an CR fails or is cancelled</Description>
+        </DisplayString>
+        <DisplayString ElementID="CancelPendingCRActivitiesWhenCRFails.WindowsPowerShellScript.73a4d3ae_4c35_4769_b912_266e78876e5c">
+          <Name>CancelPendingCRActivitiesWhenCRFails.WindowsPowerShellScript.73a4d3ae_4c35_4769_b912_266e78876e5c</Name>
+        </DisplayString>
+      </DisplayStrings>
+    </LanguagePack>
+  </LanguagePacks>
+</ManagementPack>
