@@ -2,53 +2,53 @@
   <Manifest>
     <Identity>
       <ID>Cireson.CancelActivitiesWhenCRFails</ID>
-      <Version>1.0.0.1</Version>
+      <Version>1.0.0.2</Version>
     </Identity>
     <Name>Cireson.CancelActivitiesWhenCRFails</Name>
     <References>
       <Reference Alias="System">
         <ID>System.Library</ID>
-        <Version>7.5.0.0</Version>
+        <Version>7.0.8443.6</Version>
         <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
       </Reference>
       <Reference Alias="Console">
         <ID>Microsoft.EnterpriseManagement.ServiceManager.UI.Console</ID>
-        <Version>7.5.0.0</Version>
+        <Version>7.0.8443.6</Version>
         <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
       </Reference>
       <Reference Alias="CustomSystem_WorkItem_ChangeRequest_Library">
         <ID>System.WorkItem.ChangeRequest.Library</ID>
-        <Version>7.5.0.0</Version>
+        <Version>7.0.8443.6</Version>
         <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
       </Reference>
       <Reference Alias="EnterpriseManagement">
         <ID>Microsoft.EnterpriseManagement.ServiceManager.UI.Administration</ID>
-        <Version>7.5.0.0</Version>
+        <Version>7.0.8443.6</Version>
         <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
       </Reference>
       <Reference Alias="SystemCenter">
         <ID>Microsoft.SystemCenter.Library</ID>
-        <Version>7.5.0.0</Version>
+        <Version>7.0.8443.6</Version>
         <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
       </Reference>
       <Reference Alias="SystemCenter1">
         <ID>Microsoft.SystemCenter.Subscriptions</ID>
-        <Version>7.5.0.0</Version>
+        <Version>7.0.8443.6</Version>
         <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
       </Reference>
       <Reference Alias="System_WorkItem_Library">
         <ID>System.WorkItem.Library</ID>
-        <Version>7.5.0.0</Version>
+        <Version>7.0.8443.6</Version>
         <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
       </Reference>
       <Reference Alias="Core">
         <ID>ServiceManager.Core.Library</ID>
-        <Version>7.5.0.0</Version>
+        <Version>7.0.8443.6</Version>
         <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
       </Reference>
       <Reference Alias="Windows">
         <ID>Microsoft.Windows.Library</ID>
-        <Version>7.5.0.0</Version>
+        <Version>7.0.8443.6</Version>
         <PublicKeyToken>31bf3856ad364e35</PublicKeyToken>
       </Reference>
     </References>
@@ -207,28 +207,21 @@ $ChildActivities | %{$Activity = Get-SCSMObject -ID $_.TargetObject.Id; if($Acti
     </Tasks>
   </Monitoring>
   <LanguagePacks>
-    <LanguagePack ID="ENA" IsDefault="true">
-      <DisplayStrings>
-        <DisplayString ElementID="Cireson.CancelActivitiesWhenCRFails">
-          <Name>Cireson.CancelActivitiesWhenCRFails</Name>
-        </DisplayString>
-      </DisplayStrings>
-    </LanguagePack>
     <LanguagePack ID="ENU" IsDefault="false">
       <DisplayStrings>
         <DisplayString ElementID="Cireson.CancelActivitiesWhenCRFails">
-          <Name>Cireson.CancelActivitiesWhenCRFails</Name>
+          <Name>Cireson Cancel Activities When CR Fails</Name>
         </DisplayString>
         <DisplayString ElementID="CancelPendingCRActivitiesWhenCRFails">
-          <Name>CancelPendingCRActivitiesWhenCRFails</Name>
+          <Name>Cireson Cancel Activities When CR Fails</Name>
           <Description>Cancel all pending child activities when an CR fails or is cancelled</Description>
         </DisplayString>
         <DisplayString ElementID="CancelPendingCRActivitiesWhenCRFails" SubElementID="WA">
-          <Name>Cancel all pending child activities when an CR fails or is cancelled</Name>
+          <Name>Cireson Cancel Activities When CR Fails</Name>
           <Description>Cancel all pending child activities when an CR fails or is cancelled</Description>
         </DisplayString>
         <DisplayString ElementID="CancelPendingCRActivitiesWhenCRFails.WindowsPowerShellScript.73a4d3ae_4c35_4769_b912_266e78876e5c">
-          <Name>CancelPendingCRActivitiesWhenCRFails.WindowsPowerShellScript.73a4d3ae_4c35_4769_b912_266e78876e5c</Name>
+          <Name>Cireson Cancel Activities When CR Fails</Name>
         </DisplayString>
       </DisplayStrings>
     </LanguagePack>
